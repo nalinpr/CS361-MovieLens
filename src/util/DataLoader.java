@@ -208,11 +208,11 @@ public class DataLoader {
 
 	public static void main(String[] args){
 		DataLoader p = new DataLoader();
-		p.loadData("./src/ml-latest-small/movies_top_1000.csv", "./src/ml-latest-small/ratings.csv");
+		p.loadData("./src/ml-latest-small/movies.csv", "./src/ml-latest-small/ratings.csv");
 		System.out.println("Number of movies: " + p.getMovies().size());
 		System.out.println("Number of reviewers: " + p.getReviewers().size());
 		p.printMovieList();
-		p.printReviewerList();
+//		p.printReviewerList();
 	}
 
 }
