@@ -46,11 +46,14 @@ public class MovieLensAnalyzer {
 				}
 			}
 		}
+
+		HashMap<Integer, ArrayList<Movie>> graph = new HashMap<>();
 		long endTime   = System.nanoTime();
 		long totalTime = endTime - startTime;
 		double totalTimeDivided = totalTime/1000000000.0;
 
 		System.out.println(totalTimeDivided + " seconds");
+
 
 
 
