@@ -54,6 +54,15 @@ public class MovieLensAnalyzer {
 
 
 
-
+		HashMap<Integer, Double> movieAverages = new HashMap<Integer, Double>();
+		for(Integer movie: movieArray.keySet()){
+		    double average = 0.0;
+            for(int i = 1; i< 6; i++){
+               average += movieArray.get(movie).get(i).size()*i;
+            }
+            average = average / movieArray.get(movie).get(0).size();
+            movieAverages.put(movie, average);
+            //System.out.println(average + " " + movies.get(movie).getTitle());
+        }
 	}
 }
