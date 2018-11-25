@@ -5,7 +5,6 @@ import graph.GraphAlgorithms;
 import util.DataLoader;
 import data.Movie;
 import data.Reviewer;
-import util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,7 +80,8 @@ public class MovieLensAnalyzer {
 				}
 			}
 		}
-		Graph averageGraph = makeGraphOne(adjList, movies);
+		Graph<Movie> averageGraph = makeGraphOne(adjList, movies);
+		Graph<Movie> usersGraph = makeGraphTwo(movieMap,movies);
 		System.out.println(averageGraph.numVertices());
 		Movie start = movies.get(1);
 		Map<Integer, Integer> distances = GraphAlgorithms.djikstras(averageGraph, start, movies);
@@ -99,9 +99,21 @@ public class MovieLensAnalyzer {
 		long totalTime = endTime - startTime;
 		double totalTimeDivided = totalTime / 1000000000.0;
 		System.out.println(totalTimeDivided + " seconds");
+
+		startTime = System.nanoTime();
+		int[][] matrix = GraphAlgorithms.floydWarshall(averageGraph,movies);
+		endTime = System.nanoTime();
+		totalTime = endTime-startTime;
+		totalTimeDivided = totalTime / 1000000000.0;
+		ArrayList<Movie> test = (ArrayList<Movie>) usersGraph.getNeighbors(movies.get(3));
+		System.out.println(test.toString());
+
+
+
+
 	}
 
-	public static Graph makeGraphOne(ArrayList<Integer>[] adjList, Map<Integer, Movie> movies) {
+	public static Graph<Movie> makeGraphOne(ArrayList<Integer>[] adjList, Map<Integer, Movie> movies) {
 		Graph<Movie> graph = new Graph<>();
 		//adding nodes to graph
 		for (int i = 0; i < adjList.length; i++) {
@@ -116,8 +128,8 @@ public class MovieLensAnalyzer {
 		return graph;
 
 	}
-	
-	public static Graph makeGraphTwo (HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies){
+
+	public static Graph<Movie> makeGraphTwo (HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies){
 		Graph<Movie> graph = new Graph<>();
 		for (Integer movieID : movies.keySet()) {
 			graph.addVertex(movies.get(movieID));
@@ -144,7 +156,4 @@ public class MovieLensAnalyzer {
 		}
 		return graph;
 	}
-}
-
-
 }
