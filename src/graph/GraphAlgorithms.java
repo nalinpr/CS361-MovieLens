@@ -48,6 +48,40 @@ public class GraphAlgorithms {
 
     }
 
+    public static int[][] floydWarshall(Graph<Movie> movieGraph, Map<Integer, Movie> movies) {
+        int[][] adjMatrix = new int[1000][1000];
+        for (int i = 3; i < 1000; i++) {
+            Movie outerMovie = movies.get(i + 1);
+            ArrayList<Movie> neighbors = (ArrayList<Movie>) movieGraph.getNeighbors(outerMovie);
+            for (int j = 0; j < 1000; j++) {
+                Movie innerMovie = movies.get(j + 1);
+                // Diagonal of matrix should be zeros
+                if (outerMovie.equals(innerMovie)) {
+                    adjMatrix[i][j] = 0;
+                } // If an edge exists, put a weight of 1. Else, give an "infinite" weight
+                else if (neighbors.contains(innerMovie)) {
+                    adjMatrix[i][j] = 1;
+                }
+                else {
+                    adjMatrix[i][j] = 1001;
+                }
+
+            }
+        }
+
+        int[][] oldMatrix = adjMatrix;
+        for (int k = 0; k < 1000; k++){
+            for (int i = 0; i < 1000; i++) {
+                for (int j = 0; j < 1000; j++) {
+                    adjMatrix[i][j] = Math.min(oldMatrix[i][j], oldMatrix[i][k] + oldMatrix[k][j]);
+                }
+            }
+            oldMatrix = adjMatrix;
+        }
+
+        return oldMatrix;
+    }
+
 
 
 }
