@@ -32,31 +32,31 @@ public class MovieLensAnalyzer {
 		Map<Integer, Reviewer> reviewers = dl.getReviewers();
 		// Map of each movieID to an ArrayList of 6 ArrayLists
 		// The initial ArrayList contains all reviews, the next five sort the reviews by their rating
-		HashMap<Integer, ArrayList<ArrayList<Integer>>> movieArray = new HashMap<Integer, ArrayList<ArrayList<Integer>>>();
+		HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap = new HashMap<Integer, ArrayList<ArrayList<Integer>>>();
 		// For a given movieID
 		for (Integer id : movies.keySet()) {
-			movieArray.put(id, new ArrayList<ArrayList<Integer>>(6));
+			movieMap.put(id, new ArrayList<ArrayList<Integer>>(6));
 			for (int i = 0; i<6;i++){
-				movieArray.get(id).add(new ArrayList<Integer>());
+				movieMap.get(id).add(new ArrayList<Integer>());
 			}
 			// For each reviewer
 			for (Integer reviewer: reviewers.keySet()){
 				// If they reviewed the movie, add them into out master data structure
 				if(reviewers.get(reviewer).ratedMovie(id)){
 					int rating = (int)reviewers.get(reviewer).getMovieRating(id);
-					movieArray.get(id).get(rating).add(reviewer);
-					movieArray.get(id).get(0).add(reviewer);
+					movieMap.get(id).get(rating).add(reviewer);
+					movieMap.get(id).get(0).add(reviewer);
 				}
 			}
 		}
 
 		HashMap<Integer, Double> movieAverages = new HashMap<Integer, Double>();
-		for(Integer movie: movieArray.keySet()){
+		for(Integer movie: movieMap.keySet()){
 		    double average = 0.0;
             for(int i = 1; i< 6; i++){
-               average += movieArray.get(movie).get(i).size()*i;
+               average += movieMap.get(movie).get(i).size()*i;
             }
-            average = average / movieArray.get(movie).get(0).size();
+            average = average / movieMap.get(movie).get(0).size();
             movieAverages.put(movie, average);
             //System.out.println(average + " " + movies.get(movie).getTitle());
         }
@@ -81,7 +81,7 @@ public class MovieLensAnalyzer {
 				}
 			}
 		}
-		Graph averageGraph = makeGraph(adjList, movies);
+		Graph averageGraph = makeGraphOne(adjList, movies);
 		System.out.println(averageGraph.numVertices());
 		Movie start = movies.get(1);
 		Map<Integer, Integer> distances = GraphAlgorithms.djikstras(averageGraph,start,movies);
@@ -92,7 +92,7 @@ public class MovieLensAnalyzer {
 				min = distances.get(key);
 				minKey = key;
 			}
-		}
+		} 
 		System.out.println("Min value ="+ min + " movie = "+movies.get(minKey));
 		//System.out.println(averageGraph.getNeighbors(start));
 		long endTime   = System.nanoTime();
@@ -101,8 +101,8 @@ public class MovieLensAnalyzer {
 		System.out.println(totalTimeDivided + " seconds");
 	}
 
-	public static Graph makeGraph (ArrayList<Integer>[]adjList, Map<Integer, Movie> movies){
-		Graph graph = new Graph();
+	public static Graph makeGraphOne (ArrayList<Integer>[]adjList, Map<Integer, Movie> movies){
+		Graph<Movie> graph = new Graph<>();
 		//adding nodes to graph
 		for(int i = 0; i < adjList.length; i++){
 			graph.addVertex(movies.get(i+1));
@@ -115,5 +115,33 @@ public class MovieLensAnalyzer {
 		}
 		return graph;
 
+	}
+	
+	public static Graph makeGraphTwo (HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies){
+		Graph<Movie> graph = new Graph<>();
+		for (Integer movieID : movies.keySet()) {
+			graph.addVertex(movies.get(movieID));
+		}
+		// For a given movie (outer movie)
+		for (Integer outerID : movies.keySet()) {
+			// Loop through all other movies (inner movies
+			for (Integer innerID : movieMap.keySet()) {
+				if (outerID.equals(innerID)) continue;
+
+				int count = 0;
+
+				// Loop through each of the five rating lists
+				for (int i = 1; i < 6; i++){
+
+					ArrayList<Integer> outerList = movieMap.get(outerID).get(i);
+					ArrayList<Integer> innerList = movieMap.get(innerID).get(i);
+					// If the same user appears in both ratings list, increase count
+					for (Integer user : innerList) if (outerList.contains(user)) count++;
+				}
+
+				if (count >= 12) graph.addEdge(movies.get(outerID), movies.get(innerID));
+			}
+		}
+		return graph;
 	}
 }
