@@ -50,9 +50,6 @@ public class MovieLensAnalyzer {
 			}
 		}
 
-
-
-
 		HashMap<Integer, Double> movieAverages = new HashMap<Integer, Double>();
 		for(Integer movie: movieArray.keySet()){
 		    double average = 0.0;
@@ -117,5 +114,6 @@ public class MovieLensAnalyzer {
 			}
 		}
 		return graph;
+
 	}
 }
