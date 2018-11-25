@@ -145,6 +145,3 @@ public class MovieLensAnalyzer {
 		return graph;
 	}
 }
-
-
-}
