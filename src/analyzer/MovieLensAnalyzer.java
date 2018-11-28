@@ -65,17 +65,18 @@ public class MovieLensAnalyzer {
 		System.out.print("\nChoose an option to build the graph (1-2): ");
 		int choice = sc.nextInt();
 		Graph<Movie> movieGraph;
+		int[][] weights = new int[1000][1000];
 		if (choice == 1){
 			System.out.print("\nCreating graph...");
 			long start = System.nanoTime();
-			movieGraph = makeGraphOne(movieMap,movies);
+			movieGraph = makeGraphOne(movieMap,movies,weights);
 			long end = System.nanoTime();
 			System.out.println("The graph has been created");
 			System.out.println("Time to build: "+ (end-start)/1000000000.0+" secs");
 		} else if (choice == 2){
 			System.out.print("\nCreating graph...");
 			long start = System.nanoTime();
-			movieGraph = makeGraphTwo(movieMap,movies);
+			movieGraph = makeGraphTwo(movieMap,movies,weights);
 			long end = System.nanoTime();
 			System.out.println("The graph has been created");
 			System.out.println("Time to build: "+ (end-start)/1000000000.0+" secs");
@@ -104,7 +105,7 @@ public class MovieLensAnalyzer {
 					}
 				}
 
-				int[][] shortestPaths = GraphAlgorithms.floydWarshall(movieGraph,movies);
+				int[][] shortestPaths = GraphAlgorithms.floydWarshall(movieGraph,movies,weights);
 				int diameter = Integer.MIN_VALUE;
 				double avgLength = 0;
 				int numOfPaths = 0;
@@ -142,7 +143,7 @@ public class MovieLensAnalyzer {
 				Movie start = movies.get(sc.nextInt());
 				System.out.println("Enter an end movie");
 				Movie end = movies.get(sc.nextInt());
-				Map<Integer, Integer> distances = (Map<Integer, Integer>) GraphAlgorithms.djikstras(movieGraph,start,movies);
+				Map<Integer, Integer> distances = (Map<Integer, Integer>) GraphAlgorithms.djikstras(movieGraph,start,movies,weights);
 				int distance = distances.get(end.getMovieId());
 				if(distance == 1001){
 					System.out.println("A path between these 2 nodes does not exist");
@@ -166,43 +167,6 @@ public class MovieLensAnalyzer {
 			//choice = sc.nextInt();
 		}
 		System.out.println("Bye!");
-
-
-
-
-
-
-//		ArrayList<Integer>[] adjList = makeAvgAdjList(movieMap, movies);
-//		Graph<Movie> averageGraph = (Graph<Movie>) makeGraphOne(adjList, movies);
-//		Graph<Movie> usersGraph = makeGraphTwo(movieMap,movies);
-//		System.out.println(averageGraph.numVertices());
-//		Movie start = movies.get(1);
-//		Map<Integer, Integer> distances = GraphAlgorithms.djikstras(averageGraph, start, movies);
-//		int min = Integer.MAX_VALUE;
-//		int minKey = 0;
-//		for (Integer key : distances.keySet()) {
-//			if (distances.get(key) < min) {
-//				min = distances.get(key);
-//				minKey = key;
-//			}
-//		}
-//		System.out.println("Min value =" + min + " movie = " + movies.get(minKey));
-//		//System.out.println(averageGraph.getNeighbors(start));
-//		long endTime = System.nanoTime();
-//		long totalTime = endTime - startTime;
-//		double totalTimeDivided = totalTime / 1000000000.0;
-//		System.out.println(totalTimeDivided + " seconds");
-//
-//		startTime = System.nanoTime();
-//		int[][] matrix = GraphAlgorithms.floydWarshall(averageGraph,movies);
-//		endTime = System.nanoTime();
-//		totalTime = endTime-startTime;
-//		totalTimeDivided = totalTime / 1000000000.0;
-//		ArrayList<Movie> test = (ArrayList<Movie>) usersGraph.getNeighbors(movies.get(3));
-//		System.out.println(test.toString());
-
-
-
 
 	}
 
@@ -241,7 +205,7 @@ public class MovieLensAnalyzer {
 		return adjList;
 	}
 
-	public static Graph<Movie> makeGraphOne(HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies) {
+	private static Graph<Movie> makeGraphOne(HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies, int[][] weights) {
 		ArrayList<Integer>[] adjList = makeAvgAdjList(movieMap, movies);
 		Graph<Movie> graph = new Graph<>();
 		//adding nodes to graph
@@ -258,11 +222,14 @@ public class MovieLensAnalyzer {
 
 	}
 
-	public static Graph<Movie> makeGraphTwo (HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies){
+	private static Graph<Movie> makeGraphTwo(HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies, int[][] weights){
 		Graph<Movie> graph = new Graph<>();
 		for (Integer movieID : movies.keySet()) {
 			graph.addVertex(movies.get(movieID));
 		}
+
+		int maxCount = 0;
+		int[][] countMatrix = new int[1000][1000];
 		// For a given movie (outer movie)
 		for (Integer outerID : movies.keySet()) {
 			// Loop through all other movies (inner movies
@@ -280,9 +247,30 @@ public class MovieLensAnalyzer {
 					for (Integer user : innerList) if (outerList.contains(user)) count++;
 				}
 
-				if (count >= 12) graph.addEdge(movies.get(outerID), movies.get(innerID));
+				if (count >= 12) {
+					graph.addEdge(movies.get(outerID), movies.get(innerID));
+					countMatrix[outerID-1][innerID-1] = count;
+					if (count > maxCount) maxCount = count;
+				}
+			}
+		}
+		int edgeCount = 0;
+		int weightInterval = (maxCount/3)+1;
+		for (int i = 0; i < 1000; i++) {
+			for (int j = 0; j < 1000; j++) {
+				int currCount = countMatrix[i][j];
+				if (currCount == 0) continue;
+				if (currCount <= weightInterval) weights[i][j] = 3;
+				else if (currCount <= weightInterval*2) weights[i][j] = 2;
+				else if (currCount <= weightInterval*3) weights[i][j] = 1;
+				edgeCount++;
 			}
 		}
 		return graph;
+	}
+
+
+	private void exploreGraph(Graph<Movie> graph,  Map<Integer, Movie> movies){
+
 	}
 }
