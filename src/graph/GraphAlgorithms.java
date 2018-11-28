@@ -9,10 +9,12 @@ import java.util.*;
 
 public class GraphAlgorithms {
 
-    public static Map djikstras(Graph<Movie> g, Movie start, Map<Integer, Movie> movies, int[][] weights){
+
+    public static void djikstras(Graph<Movie> g, Movie start, Map<Integer, Movie> movies, HashMap<Integer, Integer> dist, HashMap<Integer, Integer> prev){
+
         PriorityQueue queue = new PriorityQueue();
-        HashMap<Integer, Integer> dist = new HashMap<>();
-        HashMap <Integer, Integer> prev = new HashMap<>();
+        //HashMap<Integer, Integer> dist = new HashMap<>();
+        //HashMap <Integer, Integer> prev = new HashMap<>();
         //System.out.println(start.getTitle());
         for(Movie movie: g.getVertices()){
             if(movie.equals(start)){
@@ -53,7 +55,7 @@ public class GraphAlgorithms {
             entries.add(iterator.next());
         }
         entries.sort(Map.Entry.comparingByValue());
-        return dist;
+        //return dist;
 
     }
 
