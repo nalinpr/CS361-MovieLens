@@ -86,10 +86,11 @@ public class MovieLensAnalyzer {
 		System.out.println("\n[Option 1] Print graph stats!");
 		System.out.println("[Option 2] Print node info");
 		System.out.println("[Option 3] Display shortest path between 2 nodes");
-		System.out.println("[Option 4] Quit");
+		System.out.println("[Option 4] Get recommended a movie!");
+		System.out.println("[Option 5] Quit");
 
-		System.out.print("\nChoose an option (1-4): ");
-		while (choice != 4){
+		System.out.print("\nChoose an option (1-5): ");
+		while (choice != 5){
 			choice = sc.nextInt();
 
 			if(choice == 1){
@@ -142,27 +143,90 @@ public class MovieLensAnalyzer {
 				Movie start = movies.get(sc.nextInt());
 				System.out.println("Enter an end movie");
 				Movie end = movies.get(sc.nextInt());
-				Map<Integer, Integer> distances = (Map<Integer, Integer>) GraphAlgorithms.djikstras(movieGraph,start,movies);
-				int distance = distances.get(end.getMovieId());
+				HashMap<Integer, Integer> dist = new HashMap<>();
+				HashMap <Integer, Integer> prev = new HashMap<>();
+				GraphAlgorithms.djikstras(movieGraph,start,movies, dist, prev);
+				int distance = dist.get(end.getMovieId());
 				if(distance == 1001){
 					System.out.println("A path between these 2 nodes does not exist");
 				}
 				else{
-					System.out.println("Length of shortest path between "+start.getTitle()+" and "+end.getTitle()+" is "+distances.get(end.getMovieId()));
+					System.out.println("Length of shortest path between "+start.getTitle()+" and "+end.getTitle()+" is "+dist.get(end.getMovieId()));
 				}
-				//System.out.println("Would you like to be recommended a movie based on your choices of movies?"+start.getTitle()+"?(y/n)");
-				//String n = sc.next();
-				//while(n.equals("y")){
+			} else if(choice == 4){
+				String input = "";
+				ArrayList<Movie> likes = new ArrayList<>();
+				while(!input.equals("no")){
+					System.out.println("Enter the movie id's for as movies you like as you want! (1-1000)");
+					int movieID = sc.nextInt();
+					likes.add(movies.get(movieID));
+					System.out.println("enter another? yes/no");
+					input = sc.next();
+				}
+				ArrayList<Movie> common = new ArrayList<>();
+				common.addAll(movieGraph.getNeighbors(likes.get(0)));
+				for(Movie movie: likes){
+					common.retainAll(movieGraph.getNeighbors(movie));
+					//System.out.println(movieGraph.getNeighbors(movie));
+				}
 
-				//}
-
+				ArrayList<Movie> onSamePath = new ArrayList<>();
+				HashMap<Integer, Integer> dist = new HashMap<>();
+				HashMap <Integer, Integer> prev = new HashMap<>();
+				Movie start = likes.get(0);
+				GraphAlgorithms.djikstras(movieGraph,start,movies, dist, prev);
+				ArrayList<Movie> others = new ArrayList<>(likes);
+				others.remove(start);
+				ArrayList<Movie> onPath = new ArrayList<>();
+				for(Movie end: others){
+					Movie last = movies.get(prev.get(end.getMovieId()));
+					while(last != null &&!last.equals(start)){
+						onPath.add(movies.get(prev.get(last.getMovieId())));
+						last = movies.get(prev.get(last.getMovieId()));
+					}
+				}
+				onSamePath.addAll(onPath);
+				for(Movie start1: likes){
+					HashMap<Integer, Integer> dist1 = new HashMap<>();
+					HashMap <Integer, Integer> prev1 = new HashMap<>();
+					GraphAlgorithms.djikstras(movieGraph,start1,movies, dist1, prev1);
+					ArrayList<Movie> others1 = new ArrayList<>(likes);
+					others1.remove(start1);
+					ArrayList<Movie> onPath1 = new ArrayList<>();
+					for(Movie end: others1){
+						Movie last = movies.get(prev1.get(end.getMovieId()));
+						while(last != null && !last.equals(start1)){
+							onPath.add(movies.get(prev1.get(last.getMovieId())));
+							last = movies.get(prev1.get(last.getMovieId()));
+						}
+					}
+					onSamePath.addAll(onPath1);
+				}
+				onSamePath.removeAll(likes);
+				System.out.println("Reccomended movies: ");
+				for(Movie movie: common){
+					//System.out.print(movie.getTitle()+", ");
+				}
+				for(Movie movie: onSamePath){
+					System.out.print(movie.getTitle()+", ");
+				}
+				int max = Integer.MIN_VALUE;
+				int maxKey = 0;
+				for(int key: dist.keySet()){
+					if (dist.get(key) > max && dist.get(key)!= 1001){
+						max = dist.get(key);
+						maxKey = key;
+					}
+				}
+				System.out.println(maxKey + " "+ max);
 			}
 			System.out.println("\n[Option 1] Print graph stats!");
 			System.out.println("[Option 2] Print node info");
 			System.out.println("[Option 3] Display shortest path between 2 nodes");
-			System.out.println("[Option 4] Quit");
+			System.out.println("[Option 4] Get recommended a movie!");
+			System.out.println("[Option 5] Quit");
 
-			System.out.print("\nChoose an option (1-4): ");
+			System.out.print("\nChoose an option (1-5): ");
 			//choice = sc.nextInt();
 		}
 		System.out.println("Bye!");
@@ -234,6 +298,7 @@ public class MovieLensAnalyzer {
 					}
 					if (m1Lower <= movieAverages.get(m2 + 1) && movieAverages.get(m2 + 1) <= m1Upper && genresInCommon > 1) {
 						adjList[m1].add(m2);
+
 					}
 				}
 			}
