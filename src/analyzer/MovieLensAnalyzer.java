@@ -88,55 +88,86 @@ public class MovieLensAnalyzer {
 		System.out.println("[Option 3] Display shortest path between 2 nodes");
 		System.out.println("[Option 4] Quit");
 
-		System.out.print("\nChoose an option to build the graph (1-4): ");
-		choice = sc.nextInt();
-
-		if(choice == 1){
-			int numNodes = movieGraph.numVertices();
-			int numEdges = movieGraph.numEdges();
-			double density = 2.0*numEdges/(numNodes*(numNodes-1));
-
-			int maxDegree = Integer.MIN_VALUE;
-			for(Movie movie: movieGraph.getVertices()){
-				if(movieGraph.getNeighbors(movie).size() > maxDegree){
-					maxDegree = movieGraph.getNeighbors(movie).size();
-				}
-			}
-
-			int[][] shortestPaths = GraphAlgorithms.floydWarshall(movieGraph,movies);
-			int diameter = Integer.MIN_VALUE;
-			double avgLength = 0;
-			int numOfPaths = 0;
-			for (int i = 0; i < 1000; i++) {
-				for (int j = 0; j < 1000; j++) {
-					int currPath = shortestPaths[i][j];
-					if (currPath == 1001) continue; // This represents infinity
-					if (currPath > diameter) diameter = currPath;
-					avgLength += currPath;
-					numOfPaths++;
-				}
-			}
-			avgLength = avgLength/numOfPaths;
-
-			System.out.println("\nNumber of Nodes: "+numNodes);
-			System.out.println("Number of Edges: "+numEdges);
-			System.out.println("Density of Graph: "+density);
-			System.out.println("Max degree: "+maxDegree);
-			System.out.println("Diameter of Graph: "+diameter);
-			System.out.println("Avg length of Graph: "+avgLength);
-		} else if (choice == 2){
-			System.out.print("\nChoose a movie id to print information about (1-1000): ");
+		System.out.print("\nChoose an option (1-4): ");
+		while (choice != 4){
 			choice = sc.nextInt();
-			Movie movieChoice = movies.get(choice);
-			System.out.println("\n"+movieChoice.toString());
-			if (movieGraph.getNeighbors(movieChoice).size() == 0) System.out.println("This movie has no neighbors");
-			else{
-				System.out.println("Neighbors:\n");
-				for (Movie currMovie: movieGraph.getNeighbors(movieChoice)) {
-					System.out.println(currMovie.toString());
+
+			if(choice == 1){
+				int numNodes = movieGraph.numVertices();
+				int numEdges = movieGraph.numEdges();
+				double density = 2.0*numEdges/(numNodes*(numNodes-1));
+
+				int maxDegree = Integer.MIN_VALUE;
+				for(Movie movie: movieGraph.getVertices()){
+					if(movieGraph.getNeighbors(movie).size() > maxDegree){
+						maxDegree = movieGraph.getNeighbors(movie).size();
+					}
 				}
+
+				int[][] shortestPaths = GraphAlgorithms.floydWarshall(movieGraph,movies);
+				int diameter = Integer.MIN_VALUE;
+				double avgLength = 0;
+				int numOfPaths = 0;
+				for (int i = 0; i < 1000; i++) {
+					for (int j = 0; j < 1000; j++) {
+						int currPath = shortestPaths[i][j];
+						if (currPath == 1001) continue; // This represents infinity
+						if (currPath > diameter) diameter = currPath;
+						avgLength += currPath;
+						numOfPaths++;
+					}
+				}
+				avgLength = avgLength/numOfPaths;
+
+				System.out.println("\nNumber of Nodes: "+numNodes);
+				System.out.println("Number of Edges: "+numEdges);
+				System.out.println("Density of Graph: "+density);
+				System.out.println("Max degree: "+maxDegree);
+				System.out.println("Diameter of Graph: "+diameter);
+				System.out.println("Avg length of Graph: "+avgLength);
+			} else if (choice == 2){
+				System.out.print("\nChoose a movie id to print information about (1-1000): ");
+				choice = sc.nextInt();
+				Movie movieChoice = movies.get(choice);
+				System.out.println("\n"+movieChoice.toString());
+				if (movieGraph.getNeighbors(movieChoice).size() == 0) System.out.println("This movie has no neighbors");
+				else{
+					System.out.println("Neighbors:\n");
+					for (Movie currMovie: movieGraph.getNeighbors(movieChoice)) {
+						System.out.println(currMovie.toString());
+					}
+				}
+			} else if (choice == 3){
+				System.out.println("Enter a start movie");
+				Movie start = movies.get(sc.nextInt());
+				System.out.println("Enter an end movie");
+				Movie end = movies.get(sc.nextInt());
+				Map<Integer, Integer> distances = (Map<Integer, Integer>) GraphAlgorithms.djikstras(movieGraph,start,movies);
+				int distance = distances.get(end.getMovieId());
+				if(distance == 1001){
+					System.out.println("A path between these 2 nodes does not exist");
+				}
+				else{
+					System.out.println("Length of shortest path between "+start.getTitle()+" and "+end.getTitle()+" is "+distances.get(end.getMovieId()));
+				}
+				//System.out.println("Would you like to be recommended a movie based on your choices of movies?"+start.getTitle()+"?(y/n)");
+				//String n = sc.next();
+				//while(n.equals("y")){
+
+				//}
+
 			}
+			System.out.println("\n[Option 1] Print graph stats!");
+			System.out.println("[Option 2] Print node info");
+			System.out.println("[Option 3] Display shortest path between 2 nodes");
+			System.out.println("[Option 4] Quit");
+
+			System.out.print("\nChoose an option (1-4): ");
+			//choice = sc.nextInt();
 		}
+		System.out.println("Bye!");
+
+
 
 
 

@@ -4,9 +4,7 @@ import data.Movie;
 import util.Pair;
 import util.PriorityQueue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class GraphAlgorithms {
@@ -22,8 +20,8 @@ public class GraphAlgorithms {
                 queue.push(0, movie.getMovieId());
             }
             else{
-                dist.put(movie.getMovieId(), Integer.MAX_VALUE);
-                queue.push(-1, movie.getMovieId());
+                dist.put(movie.getMovieId(), 1001);
+                queue.push(1001, movie.getMovieId());
             }
             prev.put(movie.getMovieId(), null);
 
@@ -33,17 +31,28 @@ public class GraphAlgorithms {
             int leastPriorityMovie = queue.topElement();
             queue.pop();
             for(Movie adj: g.getNeighbors(movies.get(leastPriorityMovie))){
-                int alt = dist.get(leastPriorityMovie) -1;
+                int alt = dist.get(leastPriorityMovie) + 1;
                 if(alt < dist.get(adj.getMovieId())){
-                    dist.put(adj.getMovieId(),alt);
-                    prev.put(adj.getMovieId(), leastPriorityMovie);
+                    dist.replace(adj.getMovieId(), alt);
+                    prev.replace(adj.getMovieId(), leastPriorityMovie);
                     if(queue.isPresent(adj.getMovieId())){
-                        //queue.changePriority(adj.getMovieId(), alt);
+                        queue.changePriority(adj.getMovieId(), alt);
                     }
                 }
             }
         }
-
+        for(int key: dist.keySet()){
+            if(key != start.getMovieId() && dist.get(key)!= Integer.MAX_VALUE){
+                //dist.replace(key, Integer.MAX_VALUE-dist.get(key));
+            }
+        }
+        Set<Map.Entry<Integer, Integer>> entrySet = dist.entrySet();
+        Iterator<Map.Entry<Integer, Integer>> iterator = entrySet.iterator();
+        ArrayList<Map.Entry<Integer, Integer>> entries = new ArrayList<>();
+        while(iterator.hasNext()){
+            entries.add(iterator.next());
+        }
+        entries.sort(Map.Entry.comparingByValue());
         return dist;
 
     }
