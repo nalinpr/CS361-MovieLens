@@ -146,13 +146,20 @@ public class MovieLensAnalyzer {
 				Movie end = movies.get(sc.nextInt());
 				HashMap<Integer, Integer> dist = new HashMap<>();
 				HashMap <Integer, Integer> prev = new HashMap<>();
-				GraphAlgorithms.djikstras(movieGraph,start,movies, dist, prev);
+				GraphAlgorithms.djikstras(movieGraph,start,movies, dist, prev, weights);
 				int distance = dist.get(end.getMovieId());
+				ArrayList<Movie> onPath = new ArrayList<>();
+				Movie last = movies.get(prev.get(end.getMovieId()));
+				while(last != null &&!last.equals(start)){
+					onPath.add(movies.get(prev.get(last.getMovieId())));
+					last = movies.get(prev.get(last.getMovieId()));
+				}
 				if(distance == 1001){
 					System.out.println("A path between these 2 nodes does not exist");
 				}
 				else{
-					System.out.println("Length of shortest path between "+start.getTitle()+" and "+end.getTitle()+" is "+dist.get(end.getMovieId()));
+					System.out.println("Length of weights along shortest path between "+start.getTitle()+" and "+end.getTitle()+" is "+dist.get(end.getMovieId()));
+					System.out.println("Length of path between nodes is "+onPath.size());
 				}
 			} else if(choice == 4){
 				String input = "";
@@ -175,7 +182,7 @@ public class MovieLensAnalyzer {
 				HashMap<Integer, Integer> dist = new HashMap<>();
 				HashMap <Integer, Integer> prev = new HashMap<>();
 				Movie start = likes.get(0);
-				GraphAlgorithms.djikstras(movieGraph,start,movies, dist, prev);
+				GraphAlgorithms.djikstras(movieGraph,start,movies, dist, prev, weights);
 				ArrayList<Movie> others = new ArrayList<>(likes);
 				others.remove(start);
 				ArrayList<Movie> onPath = new ArrayList<>();
@@ -190,7 +197,7 @@ public class MovieLensAnalyzer {
 				for(Movie start1: likes){
 					HashMap<Integer, Integer> dist1 = new HashMap<>();
 					HashMap <Integer, Integer> prev1 = new HashMap<>();
-					GraphAlgorithms.djikstras(movieGraph,start1,movies, dist1, prev1);
+					GraphAlgorithms.djikstras(movieGraph,start1,movies, dist1, prev1, weights);
 					ArrayList<Movie> others1 = new ArrayList<>(likes);
 					others1.remove(start1);
 					ArrayList<Movie> onPath1 = new ArrayList<>();
@@ -204,22 +211,20 @@ public class MovieLensAnalyzer {
 					onSamePath.addAll(onPath1);
 				}
 				onSamePath.removeAll(likes);
-				System.out.println("Reccomended movies: ");
+				System.out.println("Recommended movies: ");
 				for(Movie movie: common){
-					//System.out.print(movie.getTitle()+", ");
+					if(!onSamePath.contains(movie)){
+						onPath.add(movie);
+					}
 				}
 				for(Movie movie: onSamePath){
 					System.out.print(movie.getTitle()+", ");
 				}
-				int max = Integer.MIN_VALUE;
-				int maxKey = 0;
-				for(int key: dist.keySet()){
-					if (dist.get(key) > max && dist.get(key)!= 1001){
-						max = dist.get(key);
-						maxKey = key;
+				if(likes.size() == 1){
+					for(Movie movie: movieGraph.getNeighbors(likes.get(0))){
+						System.out.print(movie.getTitle()+", ");
 					}
 				}
-				System.out.println(maxKey + " "+ max);
 			}
 			System.out.println("\n[Option 1] Print graph stats!");
 			System.out.println("[Option 2] Print node info");
@@ -234,7 +239,7 @@ public class MovieLensAnalyzer {
 
 	}
 
-	private static ArrayList<Integer>[] makeAvgAdjList(HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies ){
+	private static ArrayList<Integer>[] makeAvgAdjList(HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies, int[][] weights){
 		HashMap<Integer, Double> movieAverages = new HashMap<Integer, Double>();
 		for (Integer movie : movieMap.keySet()) {
 			double average = 0.0;
@@ -243,7 +248,6 @@ public class MovieLensAnalyzer {
 			}
 			average = average / movieMap.get(movie).get(0).size();
 			movieAverages.put(movie, average);
-			//System.out.println(average + " " + movies.get(movie).getTitle());
 		}
 		//creating adjacency list for movie averages
 		ArrayList<Integer>[] adjList = new ArrayList[movies.keySet().size()];
@@ -262,7 +266,7 @@ public class MovieLensAnalyzer {
 					}
 					if (m1Lower <= movieAverages.get(m2 + 1) && movieAverages.get(m2 + 1) <= m1Upper && genresInCommon > 1) {
 						adjList[m1].add(m2);
-
+						weights[m1][m2] = 6 - genresInCommon;
 					}
 				}
 			}
@@ -271,7 +275,7 @@ public class MovieLensAnalyzer {
 	}
 
 	private static Graph<Movie> makeGraphOne(HashMap<Integer, ArrayList<ArrayList<Integer>>> movieMap, Map<Integer, Movie> movies, int[][] weights) {
-		ArrayList<Integer>[] adjList = makeAvgAdjList(movieMap, movies);
+		ArrayList<Integer>[] adjList = makeAvgAdjList(movieMap, movies, weights);
 		Graph<Movie> graph = new Graph<>();
 		//adding nodes to graph
 		for (int i = 0; i < adjList.length; i++) {

@@ -10,7 +10,7 @@ import java.util.*;
 public class GraphAlgorithms {
 
 
-    public static void djikstras(Graph<Movie> g, Movie start, Map<Integer, Movie> movies, HashMap<Integer, Integer> dist, HashMap<Integer, Integer> prev){
+    public static void djikstras(Graph<Movie> g, Movie start, Map<Integer, Movie> movies, HashMap<Integer, Integer> dist, HashMap<Integer, Integer> prev, int[][] weights){
 
         PriorityQueue queue = new PriorityQueue();
         //HashMap<Integer, Integer> dist = new HashMap<>();
